@@ -1,5 +1,5 @@
 import { Blockchain, SandboxContract, TreasuryContract } from '@ton/sandbox';
-import { toNano, beginCell, Cell, internal, SendMode } from '@ton/core';
+import { toNano, beginCell, Cell, internal, SendMode, Transaction } from '@ton/core';
 import { HighloadWalletV3 } from '../wrappers/HighloadWalletV3';
 import { HighloadQueryId } from '../wrappers/HighloadQueryId';
 import { KeyPair, mnemonicToPrivateKey } from '@ton/crypto';
@@ -42,7 +42,7 @@ describe('Highload Wallet V3 Gas Measurement', () => {
     /**
      * Helper to create a simple transfer message (no comment)
      */
-    function createSimpleTransfer(to: any, value: bigint) {
+    function createSimpleTransfer(to: SandboxContract<TreasuryContract>, value: bigint) {
         return internal({
             to: to.address,
             value,
@@ -54,7 +54,11 @@ describe('Highload Wallet V3 Gas Measurement', () => {
     /**
      * Helper to create a transfer message with comment
      */
-    function createTransferWithComment(to: any, value: bigint, comment: string) {
+    function createTransferWithComment(
+        to: SandboxContract<TreasuryContract>,
+        value: bigint,
+        comment: string
+    ) {
         return internal({
             to: to.address,
             value,
@@ -69,7 +73,7 @@ describe('Highload Wallet V3 Gas Measurement', () => {
     /**
      * Helper to print detailed transaction breakdown
      */
-    function printTransactionBreakdown(transactions: any[], label: string) {
+    function printTransactionBreakdown(transactions: Transaction[], label: string) {
         console.log(`\n========================================`);
         console.log(`  ${label}`);
         console.log(`========================================\n`);

@@ -22,14 +22,14 @@ function setGlobalVersion(blockchainConfig: Cell, version: number, capabilities?
 
     const newValue = beginCell().storeUint(tag, 8);
 
-    if (curVersion != version) {
+    if (curVersion !== version) {
         changed = true;
     }
     newValue.storeUint(version, 32);
 
     if (capabilities) {
         const curCapabilities = ds.loadUintBig(64);
-        if (capabilities != curCapabilities) {
+        if (capabilities !== curCapabilities) {
             changed = true;
         }
         newValue.storeUint(capabilities, 64);

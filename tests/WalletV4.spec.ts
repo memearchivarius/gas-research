@@ -14,9 +14,10 @@ describe('Wallet V4 Gas Measurement', () => {
     let blockchain: Blockchain;
     let receiver: SandboxContract<TreasuryContract>;
     let keyPair: KeyPair;
+    let walletV4: SandboxContract<WalletContractV4>;
 
     beforeAll(async () => {
-        console.log('Using official @ton/ton Wallet V4 wrapper (no local compile)');
+        console.log('Using official @ton/ton Wallet V4 wrapper');
         GAS_LOG = new GasLogAndSave('WalletV4');
     });
 
@@ -34,16 +35,18 @@ describe('Wallet V4 Gas Measurement', () => {
                 ' '
             );
         keyPair = await mnemonicToPrivateKey(mnemonics);
-    });
 
-    it('[bench] V4: simple transfer without comment', async () => {
-        const walletV4 = blockchain.openContract(
+        // Create wallet and track its size
+        walletV4 = blockchain.openContract(
             WalletContractV4.create({
                 publicKey: keyPair.publicKey,
                 workchain: 0,
             })
         );
+        GAS_LOG.rememberBocSize('WalletV4', walletV4.init.code);
+    });
 
+    it('[bench] V4: simple transfer without comment', async () => {
         const deployer = await blockchain.treasury('deployer');
         await deployer.send({ to: walletV4.address, value: toNano('1'), init: walletV4.init });
 
@@ -82,13 +85,6 @@ describe('Wallet V4 Gas Measurement', () => {
     });
 
     it('[bench] V4: transfer with comment', async () => {
-        const walletV4 = blockchain.openContract(
-            WalletContractV4.create({
-                publicKey: keyPair.publicKey,
-                workchain: 0,
-            })
-        );
-
         const deployer = await blockchain.treasury('deployer');
         await deployer.send({ to: walletV4.address, value: toNano('1'), init: walletV4.init });
 
@@ -129,13 +125,6 @@ describe('Wallet V4 Gas Measurement', () => {
     });
 
     it('[bench] V4: batch transfer (4 messages)', async () => {
-        const walletV4 = blockchain.openContract(
-            WalletContractV4.create({
-                publicKey: keyPair.publicKey,
-                workchain: 0,
-            })
-        );
-
         const deployer = await blockchain.treasury('deployer');
         await deployer.send({ to: walletV4.address, value: toNano('1'), init: walletV4.init });
 

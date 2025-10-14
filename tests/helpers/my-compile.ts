@@ -71,7 +71,7 @@ export async function myCompile(contractName: string): Promise<Cell> {
         return codeCell;
     } catch (ex) {
         process.stdout.write(`❌ Compilation failed for ${contractName}\n\n`);
-        process.stdout.write((ex as any).toString());
+        process.stdout.write((ex as Error).toString());
         throw ex;
     }
 }

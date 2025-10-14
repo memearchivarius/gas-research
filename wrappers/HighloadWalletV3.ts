@@ -202,7 +202,7 @@ export class HighloadWalletV3 implements Contract {
         sendMode: SendMode,
         createdAt?: number
     ) {
-        if (createdAt == undefined) {
+        if (createdAt === undefined) {
             createdAt = Math.floor(Date.now() / 1000) - 60;
         }
         const batchMessage = this.packActions(messages, value, query_id);

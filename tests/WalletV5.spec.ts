@@ -15,6 +15,7 @@ describe('Wallet V5R1 Gas Measurement', () => {
     let blockchain: Blockchain;
     let receiver: SandboxContract<TreasuryContract>;
     let keyPair: KeyPair;
+    let wallet: SandboxContract<WalletContractV5R1>;
 
     beforeAll(async () => {
         console.log('Using official @ton/ton Wallet V5R1 wrapper');
@@ -37,18 +38,19 @@ describe('Wallet V5R1 Gas Measurement', () => {
                 ' '
             );
         keyPair = await mnemonicToPrivateKey(mnemonics);
-    });
 
-    it('[bench] V5R1: simple transfer without comment', async () => {
-        // Create Wallet V5R1 using ready-made class
-        const wallet = blockchain.openContract(
+        // Create wallet and track its size
+        wallet = blockchain.openContract(
             WalletContractV5R1.create({
                 publicKey: keyPair.publicKey,
                 workchain: 0,
                 walletId: { networkGlobalId: -239 },
             })
         );
+        GAS_LOG.rememberBocSize('WalletV5', wallet.init.code);
+    });
 
+    it('[bench] V5R1: simple transfer without comment', async () => {
         console.log('\n========================================');
         console.log('  Wallet V5R1: Simple Transfer');
         console.log('========================================\n');
@@ -114,13 +116,6 @@ describe('Wallet V5R1 Gas Measurement', () => {
     });
 
     it('[bench] V5R1: transfer with comment', async () => {
-        const wallet = blockchain.openContract(
-            WalletContractV5R1.create({
-                publicKey: keyPair.publicKey,
-                workchain: 0,
-            })
-        );
-
         // Deploy and fund wallet
         const deployer = await blockchain.treasury('deployer');
         await deployer.send({
@@ -174,13 +169,6 @@ describe('Wallet V5R1 Gas Measurement', () => {
     });
 
     it('[bench] V5R1: batch transfer (4 messages)', async () => {
-        const wallet = blockchain.openContract(
-            WalletContractV5R1.create({
-                publicKey: keyPair.publicKey,
-                workchain: 0,
-            })
-        );
-
         // Deploy and fund wallet
         const deployer = await blockchain.treasury('deployer');
         await deployer.send({
@@ -246,22 +234,15 @@ describe('Wallet V5R1 Gas Measurement', () => {
     });
 
     it('[bench] V5R1: batch transfer (12 messages)', async () => {
-        const walletV5 = blockchain.openContract(
-            WalletContractV5R1.create({
-                publicKey: keyPair.publicKey,
-                workchain: 0,
-            })
-        );
-
         // Deploy wallet
         const deployer = await blockchain.treasury('deployer');
         await deployer.send({
-            to: walletV5.address,
+            to: wallet.address,
             value: toNano('20'),
-            init: walletV5.init,
+            init: wallet.init,
         });
 
-        const seqno = await walletV5.getSeqno();
+        const seqno = await wallet.getSeqno();
 
         // Create 12 messages with unique comments to avoid deduplication
         const messages = Array.from({ length: 12 }, (_, i) =>
@@ -276,7 +257,7 @@ describe('Wallet V5R1 Gas Measurement', () => {
             })
         );
 
-        const transfer = await walletV5.createTransfer({
+        const transfer = await wallet.createTransfer({
             seqno,
             secretKey: keyPair.secretKey,
             messages,
@@ -290,7 +271,7 @@ describe('Wallet V5R1 Gas Measurement', () => {
         const result = await blockchain.sendMessage({
             info: {
                 type: 'external-in',
-                dest: walletV5.address,
+                dest: wallet.address,
                 importFee: 0n,
             },
             body: transfer,
@@ -313,7 +294,7 @@ describe('Wallet V5R1 Gas Measurement', () => {
 
         // Verify all transactions success (all to the same receiver)
         expect(result.transactions).toHaveTransaction({
-            from: walletV5.address,
+            from: wallet.address,
             to: receiver.address,
             success: true,
         });

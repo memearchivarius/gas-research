@@ -63,7 +63,7 @@ export function collectCellStats(
 
 export function configParseMsgPrices(sc: Slice) {
     const magic = sc.loadUint(8);
-    if (magic != 0xea) {
+    if (magic !== 0xea) {
         throw Error('Invalid message prices magic number!');
     }
     return {
@@ -143,7 +143,7 @@ export function getStoragePrices(configRaw: Cell) {
 function shr16ceil(src: bigint) {
     const rem = src % 65536n;
     let res = src / 65536n;
-    if (rem != 0n) res += 1n;
+    if (rem !== 0n) res += 1n;
     return res;
 }
 
@@ -209,7 +209,11 @@ export function computeMessageForwardFees(
             storageStats.bits += 5n;
         }
     }
-    const bodyStats = collectCellStats((msg as any).body ?? beginCell().endCell(), visited, true);
+    const bodyStats = collectCellStats(
+        (msg as { body?: Cell }).body ?? beginCell().endCell(),
+        visited,
+        true
+    );
     storageStats = storageStats.add(bodyStats);
     return computeFwdFeesVerbose(msgPrices, storageStats.cells, storageStats.bits);
 }

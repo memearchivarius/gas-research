@@ -253,7 +253,21 @@ export class GasLogAndSave {
 
         // Create a more readable format
         const gasOnly: { [key: string]: number } = {};
-        const feesDetailed: { [key: string]: any } = {};
+        const feesDetailed: {
+            [key: string]: {
+                gas: number;
+                compute_fee_nanoton: number;
+                storage_fee_nanoton: number;
+                import_fee_nanoton: number;
+                total_fwd_fees_nanoton: number;
+                forward_only_nanoton: number;
+                action_fee_nanoton: number;
+                total_fee_nanoton: number;
+                reported_total_nanoton: number;
+                true_network_total_nanoton: number;
+                transactions?: number;
+            };
+        } = {};
 
         for (const [key, value] of Object.entries(this.metrics)) {
             gasOnly[key] = value.gas;
@@ -265,8 +279,9 @@ export class GasLogAndSave {
                 total_fwd_fees_nanoton: value.fees.totalFwd,
                 forward_only_nanoton: value.fees.totalFwd - value.fees.action,
                 action_fee_nanoton: value.fees.action,
-                true_network_total_nanoton: value.fees.trueNetworkTotal,
+                total_fee_nanoton: value.fees.reportedTotal,
                 reported_total_nanoton: value.fees.reportedTotal,
+                true_network_total_nanoton: value.fees.trueNetworkTotal,
                 transactions: value.transactions,
             };
         }
@@ -279,8 +294,8 @@ export class GasLogAndSave {
 
         fs.writeFileSync(fileName, JSON.stringify(obj, null, 2));
 
-        console.log(`\n✅ Gas metrics saved to ${fileName}`);
-        console.log(`\n📊 Summary:`);
+        console.log(`\n Gas metrics saved to ${fileName}`);
+        console.log(`\n Summary:`);
         console.log(`   Contract: ${this.contractName}`);
         console.log(`   Tests: ${Object.keys(this.metrics).length}`);
         console.log(

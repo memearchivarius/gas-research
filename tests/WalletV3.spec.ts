@@ -1,9 +1,8 @@
 import { Blockchain, SandboxContract, TreasuryContract, printTransactionFees } from '@ton/sandbox';
-import { toNano, beginCell } from '@ton/core';
+import { toNano, beginCell, SendMode, internal } from '@ton/core';
 import { WalletContractV3R2 } from '@ton/ton';
 import { KeyPair, mnemonicToPrivateKey } from '@ton/crypto';
 import '@ton/test-utils';
-import { SendMode, internal } from '@ton/core';
 import { activateTVM11 } from './helpers/blockchain-config';
 import { GasLogAndSave } from './helpers/gas-logger';
 
@@ -15,9 +14,10 @@ describe('Wallet V3 Gas Measurement', () => {
     let blockchain: Blockchain;
     let receiver: SandboxContract<TreasuryContract>;
     let keyPair: KeyPair;
+    let walletV3: SandboxContract<WalletContractV3R2>;
 
     beforeAll(async () => {
-        console.log('Using official @ton/ton Wallet V3R2 wrapper (no local compile)');
+        console.log('Using official @ton/ton Wallet V3R2 wrapper');
         GAS_LOG = new GasLogAndSave('WalletV3');
     });
 
@@ -36,16 +36,18 @@ describe('Wallet V3 Gas Measurement', () => {
                 ' '
             );
         keyPair = await mnemonicToPrivateKey(mnemonics);
-    });
 
-    it('[bench] V3: simple transfer without comment', async () => {
-        const walletV3 = blockchain.openContract(
+        // Create wallet and track its size
+        walletV3 = blockchain.openContract(
             WalletContractV3R2.create({
                 publicKey: keyPair.publicKey,
                 workchain: 0,
             })
         );
+        GAS_LOG.rememberBocSize('WalletV3', walletV3.init.code);
+    });
 
+    it('[bench] V3: simple transfer without comment', async () => {
         const deployer = await blockchain.treasury('deployer');
         await deployer.send({ to: walletV3.address, value: toNano('1'), init: walletV3.init });
 
@@ -84,13 +86,6 @@ describe('Wallet V3 Gas Measurement', () => {
     });
 
     it('[bench] V3: transfer with comment', async () => {
-        const walletV3 = blockchain.openContract(
-            WalletContractV3R2.create({
-                publicKey: keyPair.publicKey,
-                workchain: 0,
-            })
-        );
-
         const deployer = await blockchain.treasury('deployer');
         await deployer.send({ to: walletV3.address, value: toNano('1'), init: walletV3.init });
 
@@ -131,13 +126,6 @@ describe('Wallet V3 Gas Measurement', () => {
     });
 
     it('[bench] V3: batch transfer (4 messages)', async () => {
-        const walletV3 = blockchain.openContract(
-            WalletContractV3R2.create({
-                publicKey: keyPair.publicKey,
-                workchain: 0,
-            })
-        );
-
         const deployer = await blockchain.treasury('deployer');
         await deployer.send({ to: walletV3.address, value: toNano('1'), init: walletV3.init });
 

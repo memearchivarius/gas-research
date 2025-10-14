@@ -14,8 +14,9 @@
       "total_fwd_fees_nanoton": 400000,
       "forward_only_nanoton": 266669,
       "action_fee_nanoton": 133331,
-      "true_network_total_nanoton": 3078000,
+      "total_fee_nanoton": 2811331,
       "reported_total_nanoton": 2811331,
+      "true_network_total_nanoton": 3078000,
       "transactions": 1
     },
     "transfer_with_comment": {
@@ -26,8 +27,9 @@
       "total_fwd_fees_nanoton": 400000,
       "forward_only_nanoton": 266669,
       "action_fee_nanoton": 133331,
-      "true_network_total_nanoton": 3135600,
+      "total_fee_nanoton": 2868931,
       "reported_total_nanoton": 2868931,
+      "true_network_total_nanoton": 3135600,
       "transactions": 1
     },
     "batch_4_messages": {
@@ -38,8 +40,9 @@
       "total_fwd_fees_nanoton": 1600000,
       "forward_only_nanoton": 1066676,
       "action_fee_nanoton": 533324,
-      "true_network_total_nanoton": 5976800,
+      "total_fee_nanoton": 4910124,
       "reported_total_nanoton": 4910124,
+      "true_network_total_nanoton": 5976800,
       "transactions": 1
     },
     "batch_12_messages": {
@@ -50,10 +53,14 @@
       "total_fwd_fees_nanoton": 4800000,
       "forward_only_nanoton": 3200028,
       "action_fee_nanoton": 1599972,
-      "true_network_total_nanoton": 13720800,
+      "total_fee_nanoton": 10520772,
       "reported_total_nanoton": 10520772,
+      "true_network_total_nanoton": 13720800,
       "transactions": 1
     }
   },
-  "codeSize": {}
+  "codeSize": {
+    "WalletV5 bits": 4583,
+    "WalletV5 cells": 20
+  }
 }
