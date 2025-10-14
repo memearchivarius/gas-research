@@ -1,0 +1,462 @@
+"Asm.fif" include
+// automatically generated from `contracts/imports/stdlib-highload.fc` `contracts/wallets/highload-wallet-v3.fc` incl:`contracts/wallets/imports/stdlib.fc` 
+PROGRAM{
+  DECLPROC ~load_bool
+  DECLPROC store_bool
+  DECLPROC store_address_none
+  DECLPROC is_address_none
+  DECLPROC store_msg_flags_and_address_none
+  DECLPROC ~load_msg_flags
+  DECLPROC is_bounced
+  DECLPROC ~skip_bounced_prefix
+  DECLPROC store_statinit_ref_and_body_ref
+  DECLPROC store_only_body_ref
+  DECLPROC store_prefix_only_body
+  DECLPROC ~retrieve_fwd_fee
+  DECLPROC ~load_op
+  DECLPROC ~skip_op
+  DECLPROC store_op
+  DECLPROC ~load_query_id
+  DECLPROC ~skip_query_id
+  DECLPROC store_query_id
+  DECLPROC ~load_op_and_query_id
+  DECLPROC ~set_token_snake_metadata_entry
+  DECLPROC create_token_onchain_metadata
+  DECLPROC recv_internal
+  DECLPROC recv_external
+  78748 DECLMETHOD get_public_key
+  81467 DECLMETHOD get_subwallet_id
+  80822 DECLMETHOD get_last_clean_time
+  105070 DECLMETHOD get_timeout
+  117746 DECLMETHOD processed?
+  ~load_bool PROCINLINE:<{
+    1 LDI
+    SWAP
+  }>
+  store_bool PROCINLINE:<{
+    SWAP
+    1 STI
+  }>
+  store_address_none PROCINLINE:<{
+    0 PUSHINT
+    SWAP
+    2 STU
+  }>
+  is_address_none PROCINLINE:<{
+    2 PLDU
+    0 EQINT
+  }>
+  store_msg_flags_and_address_none PROCINLINE:<{
+    SWAP
+    6 STU
+  }>
+  ~load_msg_flags PROCINLINE:<{
+    4 LDU
+    SWAP
+  }>
+  is_bounced PROCINLINE:<{
+    1 PUSHINT
+    AND
+    1 EQINT
+  }>
+  ~skip_bounced_prefix PROCINLINE:<{
+    32 PUSHINT
+    SDSKIPFIRST
+  }>
+  store_statinit_ref_and_body_ref PROCINLINE:<{
+    7 PUSHINT
+    s0 s3 XCHG2
+    108 STU
+    STREF
+    STREF
+  }>
+  store_only_body_ref PROCINLINE:<{
+    1 PUSHINT
+    ROT
+    107 STU
+    STREF
+  }>
+  store_prefix_only_body PROCINLINE:<{
+    0 PUSHINT
+    SWAP
+    107 STU
+  }>
+  ~retrieve_fwd_fee PROCINLINE:<{
+    LDMSGADDR
+    NIP
+    LDVARUINT16
+    NIP
+    SKIPDICT
+    LDVARUINT16
+    NIP
+    LDVARUINT16
+    SWAP
+  }>
+  ~load_op PROCINLINE:<{
+    32 LDU
+    SWAP
+  }>
+  ~skip_op PROCINLINE:<{
+    32 PUSHINT
+    SDSKIPFIRST
+  }>
+  store_op PROCINLINE:<{
+    SWAP
+    32 STU
+  }>
+  ~load_query_id PROCINLINE:<{
+    64 LDU
+    SWAP
+  }>
+  ~skip_query_id PROCINLINE:<{
+    64 PUSHINT
+    SDSKIPFIRST
+  }>
+  store_query_id PROCINLINE:<{
+    SWAP
+    64 STU
+  }>
+  ~load_op_and_query_id PROCINLINE:<{
+    ~load_op INLINECALLDICT
+    SWAP
+    ~load_query_id INLINECALLDICT
+    s1 s2 XCHG
+  }>
+  ~set_token_snake_metadata_entry PROC:<{
+    0 PUSHINT
+    NEWC
+    8 STU
+    SWAP
+    STSLICER
+    ENDC
+    s0 s2 XCHG
+    8 PUSHPOW2
+    DICTUSETREF
+  }>
+  create_token_onchain_metadata PROCINLINE:<{
+    0 PUSHINT
+    NEWC
+    8 STU
+    STDICT
+    ENDC
+  }>
+  recv_internal PROC:<{
+    DUP
+    SBITREFS
+    1 EQINT
+    SWAP
+    96 EQINT
+    AND
+    IFNOTJMP:<{
+      2DROP
+    }>
+    SWAP
+    CTOS
+    ~load_msg_flags INLINECALLDICT
+    1 PUSHINT
+    AND
+    IFJMP:<{
+      2DROP
+    }>
+    LDMSGADDR
+    DROP
+    MYADDR
+    SDEQ
+    NOT
+    IFJMP:<{
+      DROP
+    }>
+    ~load_op INLINECALLDICT
+    2923619748 PUSHINT
+    EQUAL
+    IFJMP:<{
+      ~skip_query_id INLINECALLDICT
+      PLDREF
+      MYCODE
+      SWAP
+      c5 POP
+      SETCODE
+    }>
+    DROP
+  }>
+  recv_external PROC:<{
+    LDREF
+    9 PUSHPOW2
+    LDSLICEX
+    ENDS
+    OVER
+    HASHCU
+    c4 PUSH
+    CTOS
+    256 LDU
+    32 LDU
+    LDDICT
+    LDDICT
+    64 LDU
+    22 LDU
+    ENDS
+    NOW
+    OVER
+    SUB
+    s2 s(-1) PUXC
+    LESS
+    IF:<{
+      s3 POP
+      PUSHNULL
+      NOW
+      s4 PUSH
+      1 LSHIFT#
+      SUB
+      s1 s2 XCHG
+      LESS
+      IF:<{
+        PUSHNULL
+        s2 POP
+      }>
+      ROT
+      NOW
+      SWAP
+    }>
+    s6 s7 s5 XC2PU
+    CHKSIGNU
+    33 THROWIFNOT
+    s0 s6 XCHG
+    CTOS
+    32 LDU
+    LDREF
+    8 LDU
+    13 LDU
+    10 LDU
+    64 LDU
+    22 LDU
+    ENDS
+    s6 s8 XCPU
+    EQUAL
+    34 THROWIFNOT
+    s5 s10 XCPU
+    EQUAL
+    38 THROWIFNOT
+    NOW
+    s10 PUSH
+    SUB
+    s5 s(-1) PUXC
+    GREATER
+    35 THROWIFNOT
+    s0 s4 XCHG
+    NOW
+    LEQ
+    35 THROWIFNOT
+    s0 s4 PUSH2
+    13 PUSHINT
+    DICTUGETREF
+    NULLSWAPIFNOT
+    IF:<{
+      CTOS
+      s4 PUSH
+      SDSKIPFIRST
+      1 PLDI
+      36 THROWIF
+    }>ELSE<{
+      DROP
+    }>
+    s0 s9 PUSH2
+    13 PUSHINT
+    DICTUGETREF
+    NULLSWAPIFNOT
+    IF:<{
+      CTOS
+      s0 s4 XCHG2
+      LDSLICEX
+      1 LDI
+      SWAP
+      36 THROWIF
+      NEWC
+      ROT
+      STSLICER
+      STONE
+      SWAP
+      STSLICER
+    }>ELSE<{
+      DROP
+      NEWC
+      s4 PUSH
+      STZEROES
+      STONE
+      10 PUSHPOW2DEC
+      s0 s5 XCHG2
+      SUB
+      DEC
+      s1 s4 XCHG
+      STZEROES
+    }>
+    ACCEPT
+    ENDC
+    s0 s3 s9 XCHG3
+    13 PUSHINT
+    DICTUSETREF
+    s0 s4 XCHG
+    NEWC
+    256 STU
+    s1 s3 XCHG
+    32 STU
+    STDICT
+    s1 s2 XCHG
+    STDICT
+    s1 s2 XCHG
+    64 STU
+    s1 s2 XCHG
+    22 STU
+    ENDC
+    c4 POP
+    COMMIT
+    OVER
+    CTOS
+    1 LDU
+    SWAP
+    37 THROWIF
+    3 LDU
+    SWAP
+    1 PUSHINT
+    AND
+    IFJMP:<{
+      3 BLKDROP
+    }>
+    LDMSGADDR
+    SWAP
+    is_address_none INLINECALLDICT
+    37 THROWIFNOT
+    LDMSGADDR
+    NIP
+    LDVARUINT16
+    NIP
+    SKIPDICT
+    LDVARUINT16
+    NIP
+    LDVARUINT16
+    NIP
+    96 PUSHINT
+    SDSKIPFIRST
+    1 LDU
+    SWAP
+    37 THROWIF
+    1 LDI
+    SWAP
+    IF:<{
+      LDREF
+      NIP
+      ENDS
+    }>ELSE<{
+      DROP
+    }>
+    2 PUSHINT
+    OR
+    SENDRAWMSG
+  }>
+  get_public_key PROC:<{
+    c4 PUSH
+    CTOS
+    256 PLDU
+  }>
+  get_subwallet_id PROC:<{
+    c4 PUSH
+    CTOS
+    8 PUSHPOW2
+    SDSKIPFIRST
+    32 PLDU
+  }>
+  get_last_clean_time PROC:<{
+    c4 PUSH
+    CTOS
+    290 PUSHINT
+    SDSKIPFIRST
+    64 PLDU
+  }>
+  get_timeout PROC:<{
+    c4 PUSH
+    CTOS
+    354 PUSHINT
+    SDSKIPFIRST
+    22 PLDU
+  }>
+  processed? PROC:<{
+    c2 SAVE
+    SAMEALTSAVE
+    OVER
+    10 RSHIFT#
+    s0 s2 XCHG
+    10 PUSHPOW2DEC
+    AND
+    c4 PUSH
+    CTOS
+    288 PUSHINT
+    SDSKIPFIRST
+    LDDICT
+    LDDICT
+    64 LDU
+    22 LDU
+    ENDS
+    s0 s5 XCHG
+    IF:<{
+      NOW
+      s5 PUSH
+      SUB
+      s1 s(-1) PUXC
+      LESS
+      IF:<{
+        s2 POP
+        PUSHNULL
+        NOW
+        s0 s5 XCHG
+        1 LSHIFT#
+        s1 s5 XCHG
+        SUB
+        s1 s2 XCHG
+        LESS
+        IF:<{
+          DROP
+          PUSHNULL
+        }>
+      }>ELSE<{
+        DROP
+        s3 POP
+      }>
+    }>ELSE<{
+      DROP
+      s3 POP
+    }>
+    s3 s(-1) PUXC
+    13 PUSHINT
+    DICTUGETREF
+    NULLSWAPIFNOT
+    IF:<{
+      CTOS
+      OVER
+      SDSKIPFIRST
+      1 PLDI
+      IFJMP:<{
+        3 BLKDROP
+        -1 PUSHINT
+        RETALT
+      }>
+    }>ELSE<{
+      DROP
+    }>
+    -ROT
+    13 PUSHINT
+    DICTUGETREF
+    NULLSWAPIFNOT
+    IF:<{
+      CTOS
+      SWAP
+      SDSKIPFIRST
+      1 PLDI
+      IFJMP:<{
+        -1 PUSHINT
+        RETALT
+      }>
+    }>ELSE<{
+      2DROP
+    }>
+    0 PUSHINT
+  }>
+}END>c

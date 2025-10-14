@@ -1,0 +1,59 @@
+{
+  "gas": {
+    "simple_transfer": 4939,
+    "transfer_with_comment": 4939,
+    "batch_4_messages": 7090,
+    "batch_12_messages": 12826
+  },
+  "fees_detailed": {
+    "simple_transfer": {
+      "gas": 4939,
+      "compute_fee_nanoton": 1975600,
+      "storage_fee_nanoton": 0,
+      "import_fee_nanoton": 702400,
+      "total_fwd_fees_nanoton": 400000,
+      "forward_only_nanoton": 266669,
+      "action_fee_nanoton": 133331,
+      "true_network_total_nanoton": 3078000,
+      "reported_total_nanoton": 5613331,
+      "transactions": 1
+    },
+    "transfer_with_comment": {
+      "gas": 4939,
+      "compute_fee_nanoton": 1975600,
+      "storage_fee_nanoton": 0,
+      "import_fee_nanoton": 760000,
+      "total_fwd_fees_nanoton": 400000,
+      "forward_only_nanoton": 266669,
+      "action_fee_nanoton": 133331,
+      "true_network_total_nanoton": 3135600,
+      "reported_total_nanoton": 2868931,
+      "transactions": 1
+    },
+    "batch_4_messages": {
+      "gas": 7090,
+      "compute_fee_nanoton": 2836000,
+      "storage_fee_nanoton": 0,
+      "import_fee_nanoton": 1540800,
+      "total_fwd_fees_nanoton": 1600000,
+      "forward_only_nanoton": 1066676,
+      "action_fee_nanoton": 533324,
+      "true_network_total_nanoton": 5976800,
+      "reported_total_nanoton": 4910124,
+      "transactions": 1
+    },
+    "batch_12_messages": {
+      "gas": 12826,
+      "compute_fee_nanoton": 5130400,
+      "storage_fee_nanoton": 0,
+      "import_fee_nanoton": 3790400,
+      "total_fwd_fees_nanoton": 4800000,
+      "forward_only_nanoton": 3200028,
+      "action_fee_nanoton": 1599972,
+      "true_network_total_nanoton": 13720800,
+      "reported_total_nanoton": 10520772,
+      "transactions": 1
+    }
+  },
+  "codeSize": {}
+}
