@@ -85,22 +85,27 @@ After running tests, check `bench-snapshots/` for detailed fee breakdowns with a
 
 ### **Quick Comparison Table**
 
-| Wallet          | Simple Transfer | Batch (4 msgs)      | Per-Message (Batch)   |
-| --------------- | --------------- | ------------------- | --------------------- |
-| **V3**          | 0.00194 TON     | 0.00378 TON (max 4) | 0.000945 TON (4 msgs) |
-| **V4**          | 0.00206 TON     | 0.00390 TON (max 4) | 0.000975 TON (4 msgs) |
-| **V5**          | 0.00561 TON     | 0.00491 TON         | 0.001228 TON          |
-| **Highload V3** | 0.00332 TON     | 0.01013 TON (2 tx)  | **0.000844 TON**      |
+| Wallet          | Single Transfer | 4 Messages          | 12 Messages         | 50 Messages\*       |
+| --------------- | --------------- | ------------------- | ------------------- | ------------------- |
+| **V3**          | 0.00194 TON     | 0.00378 TON         | 0.01133 TON\*\*     | N/A                 |
+| **V4**          | 0.00206 TON     | 0.00390 TON         | 0.01170 TON\*\*     | N/A                 |
+| **V5**          | 0.00561 TON     | 0.00491 TON         | 0.01052 TON         | N/A                 |
+| **Highload V3** | 0.00332 TON     | 0.00557 TON\*\*\*   | 0.01013 TON         | 0.02930 TON         |
 
 ### **Key Insights**
 
 - **✅ Best for single transfers**: Wallet V3 (0.00194 TON)
-- **✅ Best for large batches (12+)**: V5<br/>
-<small>(1,069 gas/msg vs 1,230 gas/msg for V3)</small>
+- **✅ Best for 4-message batches**: Wallet V3 (0.00378 TON total)
+- **✅ Best for 12-message batches**: Wallet V5 (0.01052 TON total, 0.000877 TON/msg)
 - **✅ Most versatile**: Wallet V5 (good balance, up to 255 messages)
-- **✅ Best for huge batches (50+)**: Highload V3<br/>
-<small>(159 gas/msg, despite 1.8x forward fees)</small>
-- **📊 Batch comparison**: For 4 messages V3 is more efficient, for 12+ messages V5 is better
+- **✅ Best for huge batches (50+)**: Highload V3 (0.02930 TON for 50 messages, 0.000586 TON/msg)
+- **📊 Efficiency comparison**:
+  - V3 vs V5 for 12 messages: V5 saves 7% total cost
+  - Highload V3 scales best for 50+ messages despite 2-transaction overhead
+
+<small>\*Highload V3 uses 2-transaction approach (external + internal)<br/>
+\*\*V3/V4 calculated as 3 × 4-message batches (max batch size = 4)<br/>
+\*\*\*Highload V3 4-message cost calculated proportionally from 12-message batch</small>
 
 ## 📄 **License**
 
