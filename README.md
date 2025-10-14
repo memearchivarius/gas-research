@@ -112,4 +112,4 @@ MIT License - See [LICENSE](LICENSE) file for details.
 
 ---
 
-**[⬆️ Back to Top](#-ton-wallet-gas-research-)**
+**[⬆️ Back to Top](#ton-wallet-gas-research-)**
