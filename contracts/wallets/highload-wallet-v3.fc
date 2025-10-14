@@ -1,4 +1,4 @@
-#include "imports/stdlib.fc";
+#include "../imports/stdlib.fc";
 
 ;;; Store binary true b{1} into `builder` [b]
 builder store_true(builder b) asm "STONE";

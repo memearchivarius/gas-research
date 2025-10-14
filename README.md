@@ -123,13 +123,6 @@ gas-research/
 │   ├── WalletV3.spec.ts
 │   ├── WalletV4.spec.ts
 │   ├── WalletV5.spec.ts
-│   └── WalletsComparison.spec.ts
-├── scripts/                     # Network deployment & utility scripts
-│   ├── runHighloadV3.ts         # Mainnet deployment script
-│   ├── compileV5Libraries.ts    # V5 library compilation
-│   ├── v5-library-compiler.ts
-│   └── helpers/
-│       └── balanceChecker.ts
 ├── bench-snapshots/             # Gas metrics for regression tracking
 │   ├── WalletV3.last.json       # Latest gas measurements
 │   ├── WalletV4.last.json

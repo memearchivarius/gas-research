@@ -31,7 +31,7 @@ describe('Wallet V3 Gas Measurement', () => {
         receiver = await blockchain.treasury('receiver');
         
         // Generate test keypair
-        const mnemonics = 'burst moral give fun rain air sample time ramp chat piano auction pride steel material despair client field gift hello similar degree fame almost'.split(' ');
+        const mnemonics = 'test test test test test test test test test test test test test test test test test test test test test test test test'.split(' ');
         keyPair = await mnemonicToPrivateKey(mnemonics);
     });
 

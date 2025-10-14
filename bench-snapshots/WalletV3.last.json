@@ -32,13 +32,13 @@
     "batch_4_messages": {
       "gas": 4920,
       "compute_fee_nanoton": 1968000,
-      "storage_fee_nanoton": 1,
+      "storage_fee_nanoton": 0,
       "import_fee_nanoton": 1276800,
       "total_fwd_fees_nanoton": 1600000,
       "forward_only_nanoton": 1066676,
       "action_fee_nanoton": 533324,
-      "true_network_total_nanoton": 4844801,
-      "reported_total_nanoton": 3778125,
+      "true_network_total_nanoton": 4844800,
+      "reported_total_nanoton": 3778124,
       "transactions": 1
     }
   },

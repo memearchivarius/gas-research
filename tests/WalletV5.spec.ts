@@ -3,9 +3,7 @@ import { toNano, internal, SendMode, beginCell } from '@ton/core';
 import { WalletContractV5R1 } from '@ton/ton';
 import { KeyPair, mnemonicToPrivateKey } from '@ton/crypto';
 import '@ton/test-utils';
-import { activateTVM11, buildBlockchainLibraries, configureNetworkParity } from './helpers/blockchain-config';
-import { getMsgPrices, computeMessageForwardFees } from './helpers/fees';
-import { getV5BlockchainLibraries } from '../scripts/v5-library-compiler';
+import { activateTVM11 } from './helpers/blockchain-config';
 import { GasLogAndSave } from './helpers/gas-logger';
 
 /**
@@ -17,7 +15,6 @@ describe('Wallet V5R1 Gas Measurement', () => {
     let blockchain: Blockchain;
     let receiver: SandboxContract<TreasuryContract>;
     let keyPair: KeyPair;
-    let walletCode: any; // Store compiled wallet code for library setup
 
     beforeAll(async () => {
         console.log('Using official @ton/ton Wallet V5R1 wrapper');
@@ -32,23 +29,11 @@ describe('Wallet V5R1 Gas Measurement', () => {
         blockchain = await Blockchain.create();
         activateTVM11(blockchain);
 
-        // Apply precise network configuration for on-chain parity (from tolk-bench)
-        configureNetworkParity(blockchain);
-
         receiver = await blockchain.treasury('receiver');
 
         // Generate test keypair
         const mnemonics = 'test test test test test test test test test test test test test test test test test test test test test test test test'.split(' ');
         keyPair = await mnemonicToPrivateKey(mnemonics);
-
-        // Set up full blockchain libraries for parity with on-chain behavior
-        try {
-            blockchain.libs = await getV5BlockchainLibraries();
-        } catch (error) {
-            console.warn('Failed to load V5 libraries, using fallback method:', error);
-            // Fallback to wallet.init.code if library compilation fails
-            // This maintains backward compatibility while attempting full parity
-        }
     });
 
     it('[bench] V5R1: simple transfer without comment', async () => {

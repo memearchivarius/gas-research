@@ -29,7 +29,7 @@ describe('Wallet V4 Gas Measurement', () => {
         activateTVM11(blockchain);
         receiver = await blockchain.treasury('receiver');
         
-        const mnemonics = 'burst moral give fun rain air sample time ramp chat piano auction pride steel material despair client field gift hello similar degree fame almost'.split(' ');
+        const mnemonics = 'test test test test test test test test test test test test test test test test test test test test test test test test'.split(' ');
         keyPair = await mnemonicToPrivateKey(mnemonics);
     });
 

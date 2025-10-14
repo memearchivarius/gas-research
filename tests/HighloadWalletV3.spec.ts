@@ -3,7 +3,8 @@ import { toNano, beginCell, Cell, internal, SendMode } from '@ton/core';
 import { HighloadWalletV3 } from '../wrappers/HighloadWalletV3';
 import { HighloadQueryId } from '../wrappers/HighloadQueryId';
 import { KeyPair, mnemonicToPrivateKey } from '@ton/crypto';
-import { myCompile, activateTVM11 } from './helpers/my-compile';
+import { myCompile } from './helpers/my-compile';
+import { activateTVM11 } from './helpers/blockchain-config';
 import { GasLogAndSave } from './helpers/gas-logger';
 import '@ton/test-utils';
 

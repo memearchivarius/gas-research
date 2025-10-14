@@ -1,5 +1,5 @@
 "Asm.fif" include
-// automatically generated from `contracts/imports/stdlib-highload.fc` `contracts/wallets/highload-wallet-v3.fc` incl:`contracts/wallets/imports/stdlib.fc` 
+// automatically generated from `contracts/imports/stdlib-highload.fc` `contracts/wallets/highload-wallet-v3.fc` incl:`contracts/wallets/../imports/stdlib.fc` 
 PROGRAM{
   DECLPROC ~load_bool
   DECLPROC store_bool

@@ -1,5 +1,5 @@
 
-#include "imports/stdlib.fc";
+#include "../imports/stdlib.fc";
 
 const int error::signature_disabled = 132;
 const int error::invalid_seqno = 133;

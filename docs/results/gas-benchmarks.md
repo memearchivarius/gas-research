@@ -71,30 +71,11 @@ This document contains current gas consumption measurements for different TON wa
 
 \*Note: Highload V3 becomes cost-effective for 50+ transfers per batch due to 1.8x higher forward fees
 
-## Parity Implementation Details
+## Implementation Details
 
-### Library Integration
+### TVM Version Configuration
 
-For complete on-chain parity, the following components are used:
-
-```typescript
-import { getV5BlockchainLibraries } from "../../scripts/v5-library-compiler";
-
-// In test beforeEach
-blockchain.libs = await getV5BlockchainLibraries();
-```
-
-### Library Compilation
-
-Libraries are compiled with complete dependency sets:
-
-```typescript
-const compileResult = await doCompileFunc({
-    targets: ['contracts/wallets/wallet-v5.fc'],
-    sources: /* all required files */,
-    optLevel: 2
-});
-```
+For complete on-chain parity, TVM version 11 is activated:
 
 ### Fee Calculation
 
@@ -141,14 +122,18 @@ tests/
 ├── WalletV5.spec.ts           # V5 gas tests
 └── HighloadWalletV3.spec.ts   # Highload V3 gas tests
 
-scripts/
-├── v5-library-compiler.ts     # Library compilation
-└── compileV5Libraries.ts      # Alternative compiler
 
 bench-snapshots/
 └── *.last.json                # Current gas measurements
 
 contracts/
-├── wallets/wallet-v5.fc       # Main contract
-└── imports/stdlib.fc          # Standard library
+├── imports/                   # Standard library imports
+│   ├── stdlib.fc
+│   ├── stdlib-v3.fc
+│   └── stdlib-highload.fc
+└── wallets/                   # Wallet contract implementations
+    ├── wallet-v3.fc
+    ├── wallet-v4.fc
+    ├── wallet-v5.fc
+    └── highload-wallet-v3.fc
 ```

@@ -1,4 +1,4 @@
-import { Cell, Slice, beginCell, Dictionary, DictionaryValue, Message, Transaction, SendMode, MessageRelaxed } from '@ton/core';
+import { Cell, Slice, beginCell, Dictionary, DictionaryValue, Message, Transaction } from '@ton/core';
 
 export type GasPrices = {
   flat_gas_limit: bigint;
@@ -23,7 +23,7 @@ export class StorageStats {
   }
   add(...stats: StorageStats[]) {
     let cells = this.cells, bits = this.bits;
-    for (let stat of stats) {
+    for (const stat of stats) {
       bits += stat.bits;
       cells += stat.cells;
     }
@@ -34,14 +34,14 @@ export class StorageStats {
 export function collectCellStats(cell: Cell, visited: Array<string>, skipRoot: boolean = false): StorageStats {
   let bits = skipRoot ? 0n : BigInt(cell.bits.length);
   let cells = skipRoot ? 0n : 1n;
-  let hash = cell.hash().toString();
+  const hash = cell.hash().toString();
   if (visited.includes(hash)) {
     return new StorageStats();
   } else {
     visited.push(hash);
   }
-  for (let ref of cell.refs) {
-    let r = collectCellStats(ref, visited);
+  for (const ref of cell.refs) {
+    const r = collectCellStats(ref, visited);
     cells += r.cells;
     bits += r.bits;
   }
@@ -49,7 +49,7 @@ export function collectCellStats(cell: Cell, visited: Array<string>, skipRoot: b
 }
 
 export function configParseMsgPrices(sc: Slice) {
-  let magic = sc.loadUint(8);
+  const magic = sc.loadUint(8);
   if (magic != 0xea) {
     throw Error('Invalid message prices magic number!');
   }
@@ -118,7 +118,7 @@ export function getStoragePrices(configRaw: Cell) {
 }
 
 function shr16ceil(src: bigint) {
-  let rem = src % 65536n;
+  const rem = src % 65536n;
   let res = src / 65536n;
   if (rem != 0n) res += 1n;
   return res;
@@ -139,14 +139,14 @@ export function computeDefaultForwardFee(msgPrices: ReturnType<typeof configPars
 }
 
 export function computeCellForwardFees(msgPrices: ReturnType<typeof configParseMsgPrices>, msg: Cell) {
-  let storageStats = collectCellStats(msg, [], true);
+  const storageStats = collectCellStats(msg, [], true);
   return computeFwdFees(msgPrices, storageStats.cells, storageStats.bits);
 }
 
 export function computeMessageForwardFees(msgPrices: ReturnType<typeof configParseMsgPrices>, msg: Message) {
   if (msg.info.type !== 'internal') throw new Error('Internal only');
   let storageStats = new StorageStats();
-  let visited: Array<string> = [];
+  const visited: Array<string> = [];
   if (msg.init) {
     let refCount = 0;
     if (msg.init.libraries) {

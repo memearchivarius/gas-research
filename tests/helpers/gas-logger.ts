@@ -219,7 +219,7 @@ export class GasLogAndSave {
      * Remember contract code size
      */
     rememberBocSize(contractName: string, code: Cell) {
-        let { nBits, nCells } = calculateCellsAndBits(code);
+        const { nBits, nCells } = calculateCellsAndBits(code);
         this.codeSize[contractName + " bits"] = nBits;
         this.codeSize[contractName + " cells"] = nCells;
     }
