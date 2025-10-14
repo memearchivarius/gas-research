@@ -61,22 +61,13 @@ bun test tests/WalletV3.spec.ts      # Baseline wallet tests
 bun test tests/WalletV4.spec.ts      # Plugin-enabled wallet tests
 bun test tests/WalletV5.spec.ts      # Modern batch wallet tests
 bun test tests/HighloadWalletV3.spec.ts  # High-efficiency batch wallet tests
-
-# Run all tests
-bun test
 ```
 
-### **Run Benchmark Tests (Generate Fee Snapshots)**
+### **Run All Tests (Generate Fee Snapshots)**
 
 ```bash
 # Run all benchmark tests
 bun test
-
-# Run specific wallet benchmarks
-bun test tests/HighloadWalletV3.spec.ts
-bun test tests/WalletV3.spec.ts
-bun test tests/WalletV4.spec.ts
-bun test tests/WalletV5.spec.ts
 ```
 
 After running tests, check `bench-snapshots/` for detailed fee breakdowns with all fee types.
