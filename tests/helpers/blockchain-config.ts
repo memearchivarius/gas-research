@@ -3,7 +3,11 @@ import { Blockchain } from '@ton/sandbox';
 
 // Modifies blockchain config to set TVM version
 function setGlobalVersion(blockchainConfig: Cell, version: number, capabilities?: bigint): Cell {
-    const parsedConfig = Dictionary.loadDirect(Dictionary.Keys.Int(32), Dictionary.Values.Cell(), blockchainConfig);
+    const parsedConfig = Dictionary.loadDirect(
+        Dictionary.Keys.Int(32),
+        Dictionary.Values.Cell(),
+        blockchainConfig
+    );
 
     let changed = false;
 
@@ -55,5 +59,3 @@ export function activateTVM(blockchain: Blockchain, version = 11) {
 export function activateTVM11(blockchain: Blockchain) {
     activateTVM(blockchain, 11);
 }
-
-

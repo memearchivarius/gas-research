@@ -29,9 +29,12 @@ describe('Wallet V3 Gas Measurement', () => {
         blockchain = await Blockchain.create();
         activateTVM11(blockchain);
         receiver = await blockchain.treasury('receiver');
-        
+
         // Generate test keypair
-        const mnemonics = 'test test test test test test test test test test test test test test test test test test test test test test test test'.split(' ');
+        const mnemonics =
+            'test test test test test test test test test test test test test test test test test test test test test test test test'.split(
+                ' '
+            );
         keyPair = await mnemonicToPrivateKey(mnemonics);
     });
 
@@ -54,19 +57,30 @@ describe('Wallet V3 Gas Measurement', () => {
                 seqno,
                 secretKey: keyPair.secretKey,
                 sendMode: SendMode.PAY_GAS_SEPARATELY,
-                messages: [internal({ to: receiver.address, value: toNano('0.5'), bounce: false, body: beginCell().endCell() })],
+                messages: [
+                    internal({
+                        to: receiver.address,
+                        value: toNano('0.5'),
+                        bounce: false,
+                        body: beginCell().endCell(),
+                    }),
+                ],
             }),
         });
 
         printTransactionFees(result.transactions);
-        
+
         // Log detailed metrics
         const tx = result.transactions.find(t => t.inMessage?.info.type === 'external-in');
         if (tx) {
             GAS_LOG.rememberGas('simple_transfer', tx, blockchain);
         }
-        
-        expect(result.transactions).toHaveTransaction({ from: walletV3.address, to: receiver.address, success: true });
+
+        expect(result.transactions).toHaveTransaction({
+            from: walletV3.address,
+            to: receiver.address,
+            success: true,
+        });
     });
 
     it('[bench] V3: transfer with comment', async () => {
@@ -90,19 +104,30 @@ describe('Wallet V3 Gas Measurement', () => {
                 seqno,
                 secretKey: keyPair.secretKey,
                 sendMode: SendMode.PAY_GAS_SEPARATELY,
-                messages: [internal({ to: receiver.address, value: toNano('0.5'), bounce: false, body: commentCell })],
+                messages: [
+                    internal({
+                        to: receiver.address,
+                        value: toNano('0.5'),
+                        bounce: false,
+                        body: commentCell,
+                    }),
+                ],
             }),
         });
 
         printTransactionFees(result.transactions);
-        
+
         // Log detailed metrics
         const tx = result.transactions.find(t => t.inMessage?.info.type === 'external-in');
         if (tx) {
             GAS_LOG.rememberGas('transfer_with_comment', tx, blockchain);
         }
-        
-        expect(result.transactions).toHaveTransaction({ from: walletV3.address, to: receiver.address, success: true });
+
+        expect(result.transactions).toHaveTransaction({
+            from: walletV3.address,
+            to: receiver.address,
+            success: true,
+        });
     });
 
     it('[bench] V3: batch transfer (4 messages)', async () => {
@@ -153,12 +178,17 @@ describe('Wallet V3 Gas Measurement', () => {
             GAS_LOG.rememberGas('batch_4_messages', tx, blockchain);
 
             // Additional batch metrics
-            const gasUsed = tx.description.type === 'generic' && tx.description.computePhase.type === 'vm'
-                ? Number(tx.description.computePhase.gasUsed)
-                : 0;
+            const gasUsed =
+                tx.description.type === 'generic' && tx.description.computePhase.type === 'vm'
+                    ? Number(tx.description.computePhase.gasUsed)
+                    : 0;
             console.log(`\n💡 Gas per message: ${(gasUsed / 4).toFixed(0)} gas (avg)\n`);
         }
 
-        expect(result.transactions).toHaveTransaction({ from: walletV3.address, to: receiver.address, success: true });
+        expect(result.transactions).toHaveTransaction({
+            from: walletV3.address,
+            to: receiver.address,
+            success: true,
+        });
     });
 });

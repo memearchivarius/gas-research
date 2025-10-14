@@ -10,11 +10,11 @@ import '@ton/test-utils';
 
 /**
  * Gas measurement tests for Highload Wallet V3
- * 
+ *
  * KEY INSIGHT: Highload V3 behavior differs based on action count:
  * - Single action: Executes directly from external message (no internal self-transfer)
  * - Multiple actions: Uses internal self-transfer to batch execute actions
- * 
+ *
  * For batch operations, we must aggregate gas from BOTH transactions:
  * 1. External-in transaction (signature verification, preliminary checks)
  * 2. Internal self-transfer (batch action execution)
@@ -28,7 +28,7 @@ describe('Highload Wallet V3 Gas Measurement', () => {
 
     const DEFAULT_TIMEOUT = 60 * 60; // 1 hour
     const DEFAULT_SUBWALLET = 0;
-    
+
     // Use controlled timestamp to avoid run-to-run drift
     const CONTROLLED_TIMESTAMP = 1700000000; // Fixed timestamp for tests
 
@@ -67,52 +67,35 @@ describe('Highload Wallet V3 Gas Measurement', () => {
     }
 
     /**
-     * Helper to aggregate gas from multiple transactions
-     * Critical for Highload V3: we must sum gas from both external and internal passes
-     */
-    function aggregateGasUsage(transactions: any[]): bigint {
-        let totalGas = 0n;
-        
-        for (const tx of transactions) {
-            if (tx.description.type === 'generic' && tx.description.computePhase.type === 'vm') {
-                const gasUsed = tx.description.computePhase.gasUsed;
-                totalGas += gasUsed;
-            }
-        }
-        
-        return totalGas;
-    }
-
-    /**
      * Helper to print detailed transaction breakdown
      */
     function printTransactionBreakdown(transactions: any[], label: string) {
         console.log(`\n========================================`);
         console.log(`  ${label}`);
         console.log(`========================================\n`);
-        
+
         let totalGas = 0n;
-        
+
         transactions.forEach((tx, idx) => {
             if (tx.description.type === 'generic' && tx.description.computePhase.type === 'vm') {
                 const gasUsed = tx.description.computePhase.gasUsed;
                 const gasFeesNano = tx.description.computePhase.gasFees;
                 const totalFeesNano = tx.totalFees.coins;
-                
+
                 const msgType = tx.inMessage?.info.type || 'unknown';
                 console.log(`Transaction ${idx + 1} (${msgType}):`);
                 console.log(`  Gas used:     ${gasUsed.toString().padStart(10)} gas`);
                 console.log(`  Compute fee:  ${gasFeesNano.toString().padStart(10)} nanoTON`);
                 console.log(`  Total fee:    ${totalFeesNano.toString().padStart(10)} nanoTON`);
-                
+
                 totalGas += gasUsed;
             }
         });
-        
+
         console.log(`\n${'='.repeat(40)}`);
         console.log(`TOTAL GAS (all VM passes): ${totalGas.toString().padStart(10)} gas`);
         console.log(`${'='.repeat(40)}\n`);
-        
+
         return totalGas;
     }
 
@@ -121,7 +104,7 @@ describe('Highload Wallet V3 Gas Measurement', () => {
         console.log('Compiling Highload Wallet V3...');
         codeHighloadV3 = await myCompile('HighloadWalletV3');
         console.log('[OK] Highload Wallet V3 compiled');
-        
+
         // Initialize gas logger
         GAS_LOG = new GasLogAndSave('HighloadWalletV3');
         GAS_LOG.rememberBocSize('HighloadWalletV3', codeHighloadV3);
@@ -134,27 +117,33 @@ describe('Highload Wallet V3 Gas Measurement', () => {
 
     beforeEach(async () => {
         blockchain = await Blockchain.create();
-        
+
         // CRITICAL: Activate TVM11 for parity with production environment
         activateTVM11(blockchain);
-        
+
         // Optionally freeze blockchain time for deterministic tests
         blockchain.now = CONTROLLED_TIMESTAMP;
-        
+
         receiver = await blockchain.treasury('receiver');
-        
+
         // Generate test keypair (deterministic for consistent results)
-        const mnemonics = 'test test test test test test test test test test test test test test test test test test test test test test test test'.split(' ');
+        const mnemonics =
+            'test test test test test test test test test test test test test test test test test test test test test test test test'.split(
+                ' '
+            );
         keyPair = await mnemonicToPrivateKey(mnemonics);
     });
 
     it('[bench] HighloadV3: simple transfer without comment', async () => {
         const highloadWallet = blockchain.openContract(
-            HighloadWalletV3.createFromConfig({
-                publicKey: keyPair.publicKey,
-                subwalletId: DEFAULT_SUBWALLET,
-                timeout: DEFAULT_TIMEOUT,
-            }, codeHighloadV3)
+            HighloadWalletV3.createFromConfig(
+                {
+                    publicKey: keyPair.publicKey,
+                    subwalletId: DEFAULT_SUBWALLET,
+                    timeout: DEFAULT_TIMEOUT,
+                },
+                codeHighloadV3
+            )
         );
 
         // Deploy wallet
@@ -165,7 +154,7 @@ describe('Highload Wallet V3 Gas Measurement', () => {
 
         // Create simple transfer message using helper
         const transferMessage = createSimpleTransfer(receiver, toNano('0.5'));
-        
+
         // Send transfer via external message
         const result = await highloadWallet.sendExternalMessage(keyPair.secretKey, {
             message: transferMessage,
@@ -184,7 +173,7 @@ describe('Highload Wallet V3 Gas Measurement', () => {
 
         // Verify we have at least 2 transactions (external + transfer to receiver)
         expect(result.transactions.length).toBeGreaterThanOrEqual(2);
-        
+
         // Verify external transaction
         expect(result.transactions).toHaveTransaction({
             from: undefined,
@@ -201,7 +190,7 @@ describe('Highload Wallet V3 Gas Measurement', () => {
 
         // Log aggregated gas (for simple transfer, just the external transaction)
         GAS_LOG.rememberGas('simple_transfer', result.transactions[0], blockchain);
-        
+
         // Assert reasonable gas range for simple single-action transfer
         // Note: Single actions execute directly, so gas is ~6200-6500
         expect(Number(totalGas)).toBeGreaterThan(6000);
@@ -210,11 +199,14 @@ describe('Highload Wallet V3 Gas Measurement', () => {
 
     it('[bench] HighloadV3: transfer with comment', async () => {
         const highloadWallet = blockchain.openContract(
-            HighloadWalletV3.createFromConfig({
-                publicKey: keyPair.publicKey,
-                subwalletId: DEFAULT_SUBWALLET,
-                timeout: DEFAULT_TIMEOUT,
-            }, codeHighloadV3)
+            HighloadWalletV3.createFromConfig(
+                {
+                    publicKey: keyPair.publicKey,
+                    subwalletId: DEFAULT_SUBWALLET,
+                    timeout: DEFAULT_TIMEOUT,
+                },
+                codeHighloadV3
+            )
         );
 
         // Deploy wallet
@@ -225,7 +217,7 @@ describe('Highload Wallet V3 Gas Measurement', () => {
 
         // Create transfer message with comment using helper
         const transferMessage = createTransferWithComment(receiver, toNano('0.5'), 'Test transfer');
-        
+
         // Send transfer via external message
         const result = await highloadWallet.sendExternalMessage(keyPair.secretKey, {
             message: transferMessage,
@@ -244,7 +236,7 @@ describe('Highload Wallet V3 Gas Measurement', () => {
 
         // Verify transactions
         expect(result.transactions.length).toBeGreaterThanOrEqual(2);
-        
+
         expect(result.transactions).toHaveTransaction({
             from: highloadWallet.address,
             to: receiver.address,
@@ -253,7 +245,7 @@ describe('Highload Wallet V3 Gas Measurement', () => {
 
         // Log aggregated gas (for simple transfer, just the external transaction)
         GAS_LOG.rememberGas('transfer_with_comment', result.transactions[0], blockchain);
-        
+
         // Assert reasonable gas range for single-action transfer with comment
         expect(Number(totalGas)).toBeGreaterThan(6000);
         expect(Number(totalGas)).toBeLessThan(7000);
@@ -261,11 +253,14 @@ describe('Highload Wallet V3 Gas Measurement', () => {
 
     it('[bench] HighloadV3: batch transfer (12 messages)', async () => {
         const highloadWallet = blockchain.openContract(
-            HighloadWalletV3.createFromConfig({
-                publicKey: keyPair.publicKey,
-                subwalletId: DEFAULT_SUBWALLET,
-                timeout: DEFAULT_TIMEOUT,
-            }, codeHighloadV3)
+            HighloadWalletV3.createFromConfig(
+                {
+                    publicKey: keyPair.publicKey,
+                    subwalletId: DEFAULT_SUBWALLET,
+                    timeout: DEFAULT_TIMEOUT,
+                },
+                codeHighloadV3
+            )
         );
 
         // Deploy wallet
@@ -280,7 +275,7 @@ describe('Highload Wallet V3 Gas Measurement', () => {
             mode: SendMode.PAY_GAS_SEPARATELY,
             outMsg: createTransferWithComment(receiver, toNano('0.01'), `${i + 1}`),
         }));
-        
+
         // Send batch via external message
         const result = await highloadWallet.sendBatch(
             keyPair.secretKey,
@@ -305,19 +300,10 @@ describe('Highload Wallet V3 Gas Measurement', () => {
         console.log(`Total gas:        ${totalGas.toString().padStart(10)} gas`);
         console.log(`Avg per message:  ${avgGasPerMessage.toFixed(0).padStart(10)} gas`);
         console.log(`Messages sent:    ${messages.length}`);
-        
-        // Compare to theoretical single-message cost
-        const v3SingleGas = 3002;
-        const efficiency = ((v3SingleGas - avgGasPerMessage) / v3SingleGas * 100).toFixed(1);
-        console.log(`\n=== Comparison to V3 ===`);
-        console.log(`V3 single transfer:     ${v3SingleGas} gas`);
-        console.log(`Highload per message:   ${avgGasPerMessage.toFixed(0)} gas`);
-        console.log(`Savings per message:    ${efficiency}%`);
-        console.log(`Total savings (12 msg): ${(v3SingleGas * 12 - Number(totalGas)).toFixed(0)} gas\n`);
 
         // Verify transactions
         expect(result.transactions.length).toBeGreaterThanOrEqual(2);
-        
+
         expect(result.transactions).toHaveTransaction({
             from: highloadWallet.address,
             to: receiver.address,
@@ -326,7 +312,7 @@ describe('Highload Wallet V3 Gas Measurement', () => {
 
         // Log aggregated gas - slice(0, 2) gets external + internal self-transfer
         GAS_LOG.rememberGas('batch_12_messages', result.transactions.slice(0, 2), blockchain);
-        
+
         // Assert reasonable gas range for batch (more gas due to multiple actions)
         expect(Number(totalGas)).toBeGreaterThan(10000);
         expect(Number(totalGas)).toBeLessThan(20000);
@@ -334,11 +320,14 @@ describe('Highload Wallet V3 Gas Measurement', () => {
 
     it('[bench] HighloadV3: batch transfer (50 messages) - stress test', async () => {
         const highloadWallet = blockchain.openContract(
-            HighloadWalletV3.createFromConfig({
-                publicKey: keyPair.publicKey,
-                subwalletId: DEFAULT_SUBWALLET,
-                timeout: DEFAULT_TIMEOUT,
-            }, codeHighloadV3)
+            HighloadWalletV3.createFromConfig(
+                {
+                    publicKey: keyPair.publicKey,
+                    subwalletId: DEFAULT_SUBWALLET,
+                    timeout: DEFAULT_TIMEOUT,
+                },
+                codeHighloadV3
+            )
         );
 
         // Deploy wallet
@@ -353,7 +342,7 @@ describe('Highload Wallet V3 Gas Measurement', () => {
             mode: SendMode.PAY_GAS_SEPARATELY,
             outMsg: createTransferWithComment(receiver, toNano('0.01'), `${i + 1}`),
         }));
-        
+
         // Send batch
         const result = await highloadWallet.sendBatch(
             keyPair.secretKey,
@@ -386,7 +375,7 @@ describe('Highload Wallet V3 Gas Measurement', () => {
 
         // Log aggregated gas
         GAS_LOG.rememberGas('batch_50_messages', result.transactions.slice(0, 2), blockchain);
-        
+
         // Assert reasonable gas range
         expect(Number(totalGas)).toBeGreaterThan(20000);
         expect(Number(totalGas)).toBeLessThan(60000);

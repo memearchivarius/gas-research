@@ -4,7 +4,7 @@ import * as fs from 'node:fs';
 import * as path from 'node:path';
 import { getMsgPrices, collectCellStats, computeFwdFees } from './fees';
 
-const ROOT_DIR = path.resolve(__dirname, "../../bench-snapshots/");
+const ROOT_DIR = path.resolve(__dirname, '../../bench-snapshots/');
 
 function calculateCellsAndBits(root: Cell, visited = new Set<string>()) {
     const hash = root.hash().toString('hex');
@@ -28,13 +28,13 @@ function calculateCellsAndBits(root: Cell, visited = new Set<string>()) {
  */
 interface FeeBreakdown {
     gasUsed: number;
-    computeFee: number;       // Gas fees in nanoTON
-    storageFee: number;        // Storage fees in nanoTON
-    importFee: number;         // Import fee for external-in messages in nanoTON
-    totalFwdFees: number;      // Total forward fees (includes both fwd + action) in nanoTON
-    actionFee: number;         // Action fees in nanoTON (subset of totalFwdFees)
-    totalFee: number;          // Total transaction fee in nanoTON (reported by blockchain)
-    trueNetworkTotal: number;  // True network cost: storage + compute + import + totalFwdFees
+    computeFee: number; // Gas fees in nanoTON
+    storageFee: number; // Storage fees in nanoTON
+    importFee: number; // Import fee for external-in messages in nanoTON
+    totalFwdFees: number; // Total forward fees (includes both fwd + action) in nanoTON
+    actionFee: number; // Action fees in nanoTON (subset of totalFwdFees)
+    totalFee: number; // Total transaction fee in nanoTON (reported by blockchain)
+    trueNetworkTotal: number; // True network cost: storage + compute + import + totalFwdFees
 }
 
 /**
@@ -81,18 +81,18 @@ function extractFeeBreakdown(tx: Transaction, blockchain?: Blockchain): FeeBreak
     if (tx.inMessage?.info.type === 'external-in' && blockchain) {
         try {
             const msgPrices = getMsgPrices(blockchain.config, 0);
-            
+
             // Get the message cell to calculate storage stats
             const msgCell = tx.inMessage.body;
-            
+
             // Calculate storage stats (cells and bits) for the message body
             // Note: We use skipRoot=true because "bits in the root cell are free"
             // and "the root cell itself is not counted as a cell" per transaction.cpp
             const stats = collectCellStats(msgCell, [], true);
-            
+
             // Compute forward/IHR fees for the external message (this is the import fee)
             const importFee = computeFwdFees(msgPrices, stats.cells, stats.bits);
-            
+
             breakdown.importFee = Number(importFee);
         } catch (error) {
             // Fallback to importFee from message info if calculation fails
@@ -107,11 +107,8 @@ function extractFeeBreakdown(tx: Transaction, blockchain?: Blockchain): FeeBreak
     // Calculate TRUE network total for all transactions
     // Formula: storage + compute + import + totalFwdFees
     // Note: totalFwdFees already includes action fees, so don't add them separately
-    breakdown.trueNetworkTotal = 
-        breakdown.storageFee + 
-        breakdown.computeFee + 
-        breakdown.importFee + 
-        breakdown.totalFwdFees;
+    breakdown.trueNetworkTotal =
+        breakdown.storageFee + breakdown.computeFee + breakdown.importFee + breakdown.totalFwdFees;
 
     return breakdown;
 }
@@ -175,7 +172,11 @@ export class GasLogAndSave {
     /**
      * Remember gas and detailed fee breakdown for a specific test
      */
-    rememberGas(stepName: string, transaction: Transaction | Transaction[], blockchain?: Blockchain) {
+    rememberGas(
+        stepName: string,
+        transaction: Transaction | Transaction[],
+        blockchain?: Blockchain
+    ) {
         const transactions = Array.isArray(transaction) ? transaction : [transaction];
 
         // Extract fee breakdowns for each transaction
@@ -203,15 +204,31 @@ export class GasLogAndSave {
         // Log to console for immediate feedback
         console.log(`\n=== ${stepName} ===`);
         console.log(`Gas used:        ${aggregate.gasUsed.toString().padStart(10)} gas`);
-        console.log(`Compute fee:     ${aggregate.computeFee.toString().padStart(10)} nanoTON (${(aggregate.computeFee / 1e9).toFixed(6)} TON)`);
-        console.log(`Storage fee:     ${aggregate.storageFee.toString().padStart(10)} nanoTON (${(aggregate.storageFee / 1e9).toFixed(6)} TON)`);
-        console.log(`Import fee:      ${aggregate.importFee.toString().padStart(10)} nanoTON (${(aggregate.importFee / 1e9).toFixed(6)} TON)`);
-        console.log(`Total fwd fees:  ${aggregate.totalFwdFees.toString().padStart(10)} nanoTON (${(aggregate.totalFwdFees / 1e9).toFixed(6)} TON)`);
-        console.log(`  ├─ Forward:    ${forwardOnly.toString().padStart(10)} nanoTON (${(forwardOnly / 1e9).toFixed(6)} TON) [2/3]`);
-        console.log(`  └─ Action:     ${aggregate.actionFee.toString().padStart(10)} nanoTON (${(aggregate.actionFee / 1e9).toFixed(6)} TON) [1/3]`);
+        console.log(
+            `Compute fee:     ${aggregate.computeFee.toString().padStart(10)} nanoTON (${(aggregate.computeFee / 1e9).toFixed(6)} TON)`
+        );
+        console.log(
+            `Storage fee:     ${aggregate.storageFee.toString().padStart(10)} nanoTON (${(aggregate.storageFee / 1e9).toFixed(6)} TON)`
+        );
+        console.log(
+            `Import fee:      ${aggregate.importFee.toString().padStart(10)} nanoTON (${(aggregate.importFee / 1e9).toFixed(6)} TON)`
+        );
+        console.log(
+            `Total fwd fees:  ${aggregate.totalFwdFees.toString().padStart(10)} nanoTON (${(aggregate.totalFwdFees / 1e9).toFixed(6)} TON)`
+        );
+        console.log(
+            `  ├─ Forward:    ${forwardOnly.toString().padStart(10)} nanoTON (${(forwardOnly / 1e9).toFixed(6)} TON) [2/3]`
+        );
+        console.log(
+            `  └─ Action:     ${aggregate.actionFee.toString().padStart(10)} nanoTON (${(aggregate.actionFee / 1e9).toFixed(6)} TON) [1/3]`
+        );
         console.log(`---`);
-        console.log(`TRUE TOTAL:      ${aggregate.trueNetworkTotal.toString().padStart(10)} nanoTON (${(aggregate.trueNetworkTotal / 1e9).toFixed(6)} TON)`);
-        console.log(`Reported total:  ${aggregate.totalFee.toString().padStart(10)} nanoTON (${(aggregate.totalFee / 1e9).toFixed(6)} TON)`);
+        console.log(
+            `TRUE TOTAL:      ${aggregate.trueNetworkTotal.toString().padStart(10)} nanoTON (${(aggregate.trueNetworkTotal / 1e9).toFixed(6)} TON)`
+        );
+        console.log(
+            `Reported total:  ${aggregate.totalFee.toString().padStart(10)} nanoTON (${(aggregate.totalFee / 1e9).toFixed(6)} TON)`
+        );
         console.log(`Transactions:    ${transactions.length}`);
     }
 
@@ -220,8 +237,8 @@ export class GasLogAndSave {
      */
     rememberBocSize(contractName: string, code: Cell) {
         const { nBits, nCells } = calculateCellsAndBits(code);
-        this.codeSize[contractName + " bits"] = nBits;
-        this.codeSize[contractName + " cells"] = nCells;
+        this.codeSize[contractName + ' bits'] = nBits;
+        this.codeSize[contractName + ' cells'] = nCells;
     }
 
     /**
@@ -266,7 +283,9 @@ export class GasLogAndSave {
         console.log(`\n📊 Summary:`);
         console.log(`   Contract: ${this.contractName}`);
         console.log(`   Tests: ${Object.keys(this.metrics).length}`);
-        console.log(`   Code size: ${this.codeSize[this.contractName + " bits"] || 'N/A'} bits, ${this.codeSize[this.contractName + " cells"] || 'N/A'} cells`);
+        console.log(
+            `   Code size: ${this.codeSize[this.contractName + ' bits'] || 'N/A'} bits, ${this.codeSize[this.contractName + ' cells'] || 'N/A'} cells`
+        );
     }
 
     /**

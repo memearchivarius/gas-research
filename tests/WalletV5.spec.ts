@@ -32,7 +32,10 @@ describe('Wallet V5R1 Gas Measurement', () => {
         receiver = await blockchain.treasury('receiver');
 
         // Generate test keypair
-        const mnemonics = 'test test test test test test test test test test test test test test test test test test test test test test test test'.split(' ');
+        const mnemonics =
+            'test test test test test test test test test test test test test test test test test test test test test test test test'.split(
+                ' '
+            );
         keyPair = await mnemonicToPrivateKey(mnemonics);
     });
 
@@ -42,7 +45,7 @@ describe('Wallet V5R1 Gas Measurement', () => {
             WalletContractV5R1.create({
                 publicKey: keyPair.publicKey,
                 workchain: 0,
-                walletId: { networkGlobalId: -239 }
+                walletId: { networkGlobalId: -239 },
             })
         );
 
@@ -51,14 +54,12 @@ describe('Wallet V5R1 Gas Measurement', () => {
         console.log('========================================\n');
         console.log(`Wallet address: ${wallet.address.toString()}`);
 
-        // Libraries are already configured in beforeEach for full on-chain parity
-
         // Deploy and fund wallet via internal message with stateInit
         const deployer = await blockchain.treasury('deployer');
         await deployer.send({
             to: wallet.address,
-            value: toNano('10'), // Enough to cover forward fees
-            init: wallet.init, // This will deploy the contract!
+            value: toNano('10'),
+            init: wallet.init,
         });
 
         console.log('[OK] Wallet deployed and funded\n');
@@ -80,7 +81,7 @@ describe('Wallet V5R1 Gas Measurement', () => {
                     to: receiver.address,
                     value: toNano('0.5'),
                     bounce: false,
-                })
+                }),
             ],
             sendMode: SendMode.PAY_GAS_SEPARATELY,
         });
@@ -88,19 +89,17 @@ describe('Wallet V5R1 Gas Measurement', () => {
         console.log('Sending external message...\n');
 
         // Send external message via sandbox
-        // Important: add init only if seqno === 0 (first transaction)
         const result = await blockchain.sendMessage({
             info: {
                 type: 'external-in',
                 dest: wallet.address,
                 importFee: 0n, // sandbox doesn't charge import fee
             },
-            init: seqno === 0 ? wallet.init : undefined,
             body: transfer,
         });
 
         printTransactionFees(result.transactions);
-        
+
         // Log detailed metrics
         const tx = result.transactions.find(t => t.inMessage?.info.type === 'external-in');
         if (tx) {
@@ -108,7 +107,7 @@ describe('Wallet V5R1 Gas Measurement', () => {
         }
 
         expect(result.transactions).toHaveLength(2); // external + internal
-        
+
         // Check that receiver got funds
         const receiverBalance = await receiver.getBalance();
         expect(receiverBalance).toBeGreaterThan(0n);
@@ -137,7 +136,6 @@ describe('Wallet V5R1 Gas Measurement', () => {
         console.log('  Wallet V5R1: Transfer with Comment');
         console.log('========================================');
         console.log(`Comment: "${comment}"`);
-        console.log(`Length: ${comment.length} chars (${Buffer.from(comment).length} bytes)\n`);
 
         // Create transfer with comment
         const transfer = await wallet.createTransfer({
@@ -149,7 +147,7 @@ describe('Wallet V5R1 Gas Measurement', () => {
                     value: toNano('0.5'),
                     bounce: false,
                     body: comment, // Comment is added as a string
-                })
+                }),
             ],
             sendMode: SendMode.PAY_GAS_SEPARATELY,
         });
@@ -165,7 +163,7 @@ describe('Wallet V5R1 Gas Measurement', () => {
         });
 
         printTransactionFees(result.transactions);
-        
+
         // Log detailed metrics
         const tx = result.transactions.find(t => t.inMessage?.info.type === 'external-in');
         if (tx) {
@@ -236,9 +234,10 @@ describe('Wallet V5R1 Gas Measurement', () => {
             GAS_LOG.rememberGas('batch_4_messages', tx, blockchain);
 
             // Additional batch metrics
-            const gasUsed = tx.description.type === 'generic' && tx.description.computePhase.type === 'vm'
-                ? Number(tx.description.computePhase.gasUsed)
-                : 0;
+            const gasUsed =
+                tx.description.type === 'generic' && tx.description.computePhase.type === 'vm'
+                    ? Number(tx.description.computePhase.gasUsed)
+                    : 0;
             console.log(`\n💡 Gas per message: ${(gasUsed / 4).toFixed(0)} gas (avg)\n`);
         }
 
@@ -294,7 +293,6 @@ describe('Wallet V5R1 Gas Measurement', () => {
                 dest: walletV5.address,
                 importFee: 0n,
             },
-            init: undefined,
             body: transfer,
         });
 
@@ -305,22 +303,12 @@ describe('Wallet V5R1 Gas Measurement', () => {
         if (tx) {
             GAS_LOG.rememberGas('batch_12_messages', tx, blockchain);
 
-            const gasUsed = tx.description.type === 'generic' && tx.description.computePhase.type === 'vm'
-                ? Number(tx.description.computePhase.gasUsed)
-                : 0;
+            const gasUsed =
+                tx.description.type === 'generic' && tx.description.computePhase.type === 'vm'
+                    ? Number(tx.description.computePhase.gasUsed)
+                    : 0;
 
             console.log(`\n💡 Gas per message: ${(gasUsed / 12).toFixed(0)} gas (avg)`);
-
-            // Calculate efficiency compared to V3
-            const v3SingleGas = 3002;
-            const v5PerMsgGas = gasUsed / 12;
-            const efficiency = ((v3SingleGas - v5PerMsgGas) / v3SingleGas * 100).toFixed(1);
-
-            console.log('\n=== Efficiency Analysis ===');
-            console.log(`   V3 single transfer:     ${v3SingleGas} gas`);
-            console.log(`   V5 per message:         ${v5PerMsgGas.toFixed(0)} gas`);
-            console.log(`   Savings per message:    ${efficiency}%`);
-            console.log(`   Total savings (12 msg): ${(v3SingleGas * 12 - gasUsed).toFixed(0)} gas\n`);
         }
 
         // Verify all transactions success (all to the same receiver)

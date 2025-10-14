@@ -23,12 +23,11 @@ export class HighloadQueryId {
         return q;
     }
 
-
     getNext() {
         let newBitnumber = this.bitnumber + 1n;
         let newShift = this.shift;
 
-        if (newShift === MAX_SHIFT && newBitnumber > (MAX_BIT_NUMBER - 1n)) {
+        if (newShift === MAX_SHIFT && newBitnumber > MAX_BIT_NUMBER - 1n) {
             throw new Error('Overload'); // NOTE: we left one queryId for emergency withdraw
         }
 
@@ -36,7 +35,7 @@ export class HighloadQueryId {
             newBitnumber = 0n;
             newShift += 1n;
             if (newShift > MAX_SHIFT) {
-                throw new Error('Overload')
+                throw new Error('Overload');
             }
         }
 
@@ -44,7 +43,7 @@ export class HighloadQueryId {
     }
 
     hasNext() {
-        const isEnd = this.bitnumber >= (MAX_BIT_NUMBER - 1n) && this.shift === MAX_SHIFT; // NOTE: we left one queryId for emergency withdraw;
+        const isEnd = this.bitnumber >= MAX_BIT_NUMBER - 1n && this.shift === MAX_SHIFT; // NOTE: we left one queryId for emergency withdraw;
         return !isEnd;
     }
 

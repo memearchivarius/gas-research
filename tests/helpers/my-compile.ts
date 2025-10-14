@@ -1,8 +1,8 @@
-import { Cell } from "@ton/core";
-import { extractCompilableConfig } from "@ton/blueprint/dist/compile/compile";
-import { doCompileFunc } from "@ton/blueprint/dist/compile/func/compile.func";
-import fs from "fs";
-import path from "path";
+import { Cell } from '@ton/core';
+import { extractCompilableConfig } from '@ton/blueprint/dist/compile/compile';
+import { doCompileFunc } from '@ton/blueprint/dist/compile/func/compile.func';
+import fs from 'fs';
+import path from 'path';
 
 const PROJECT_ROOT = path.resolve(__dirname, '../../');
 const WRAPPERS_ROOT = `${PROJECT_ROOT}/wrappers/`;
@@ -29,7 +29,6 @@ function saveFiftOutput(contractName: string, fiftOutput: string) {
     fs.writeFileSync(curFifFileName, fiftOutput, 'utf-8');
 }
 
-
 // `myCompile` is a replacement for `compile` that searches for `.compile.ts` in wrappers/ (standard)
 // and also saves fif output.
 export async function myCompile(contractName: string): Promise<Cell> {
@@ -44,7 +43,7 @@ export async function myCompile(contractName: string): Promise<Cell> {
     try {
         let codeCell: Cell;
         let fiftOutput: string;
-        
+
         if (config.lang === 'func') {
             const funcResult = await doCompileFunc({
                 targets: config.targets!,
@@ -63,7 +62,9 @@ export async function myCompile(contractName: string): Promise<Cell> {
             fiftOutput = funcResult.fiftCode;
         } else {
             // noinspection ExceptionCaughtLocallyJS
-            throw new Error(`Unknown compiler type: ${config.lang}. Only 'func' is supported in gas-research.`);
+            throw new Error(
+                `Unknown compiler type: ${config.lang}. Only 'func' is supported in gas-research.`
+            );
         }
 
         saveFiftOutput(contractName, fiftOutput);
@@ -74,4 +75,3 @@ export async function myCompile(contractName: string): Promise<Cell> {
         throw ex;
     }
 }
-

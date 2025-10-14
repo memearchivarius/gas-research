@@ -1,0 +1,27 @@
+# Dependencies
+node_modules/
+
+# Build outputs
+dist/
+build/
+fift-output/
+
+# Generated files
+bench-snapshots/
+coverage/
+*.min.js
+
+# Config files (format with specific tools)
+*.config.js
+*.config.ts
+tsconfig.json
+
+# Lock files
+bun.lock
+package-lock.json
+yarn.lock
+
+# Documentation
+README.md
+CHANGELOG.md
+
