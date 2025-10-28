@@ -2,6 +2,7 @@
   "gas": {
     "simple_transfer": 2994,
     "transfer_with_comment": 2994,
+    "batch_2_messages": 3636,
     "batch_4_messages": 4920
   },
   "fees_detailed": {
@@ -29,6 +30,19 @@
       "total_fee_nanoton": 1998131,
       "reported_total_nanoton": 1998131,
       "true_network_total_nanoton": 2264800,
+      "transactions": 1
+    },
+    "batch_2_messages": {
+      "gas": 3636,
+      "compute_fee_nanoton": 1454400,
+      "storage_fee_nanoton": 0,
+      "import_fee_nanoton": 838400,
+      "total_fwd_fees_nanoton": 800000,
+      "forward_only_nanoton": 533338,
+      "action_fee_nanoton": 266662,
+      "total_fee_nanoton": 2559462,
+      "reported_total_nanoton": 2559462,
+      "true_network_total_nanoton": 3092800,
       "transactions": 1
     },
     "batch_4_messages": {

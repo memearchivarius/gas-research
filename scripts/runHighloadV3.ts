@@ -9,10 +9,12 @@ import { ensureSufficientBalance } from './helpers/balanceChecker';
 /**
  * Highload Wallet V3 Script - Testnet/Mainnet Operations
  * 
- * This script demonstrates the three main Highload V3 usage patterns:
+ * This script demonstrates the Highload V3 usage patterns:
  * 1. Simple transfer (no comment)
  * 2. Transfer with comment
- * 3. Batch transfer (10 messages)
+ * 3. Batch transfer (4 messages)
+ * 4. Batch transfer (12 messages)
+ * 5. Batch transfer (50 messages)
  * 
  * Usage:
  *   Simple transfer:
@@ -20,6 +22,9 @@ import { ensureSufficientBalance } from './helpers/balanceChecker';
  *
  *   Transfer with comment:
  *     npx blueprint run runHighloadV3 --testnet --tonconnect comment "Hello World" [receiver_address]
+ *
+ *   Batch 4 transfers:
+ *     npx blueprint run runHighloadV3 --testnet --tonconnect batch4 [receiver_address]
  *
  *   Batch 12 transfers:
  *     npx blueprint run runHighloadV3 --testnet --tonconnect batch12 [receiver_address]
@@ -170,6 +175,43 @@ async function executeTransferWithComment(
 }
 
 /**
+ * Execute batch transfer (4 messages)
+ */
+async function executeBatchTransfer4(
+    wallet: HighloadWalletV3,
+    provider: any,
+    keyPair: any,
+    receiver: Address,
+    queryId: HighloadQueryId,
+    createdAt: number,
+    ui: any
+) {
+    // Create batch of 4 transfers with unique comments to avoid deduplication
+    const messages = Array.from({ length: 4 }, (_, i) => ({
+        type: 'sendMsg' as const,
+        mode: SendMode.PAY_GAS_SEPARATELY,
+        outMsg: createTransferWithComment(receiver, toNano('0.01'), `${i + 1}`),
+    }));
+    
+    await wallet.sendBatch(
+        provider,
+        keyPair.secretKey,
+        messages,
+        DEFAULT_SUBWALLET,
+        queryId,
+        DEFAULT_TIMEOUT,
+        toNano('0.05'),
+        SendMode.PAY_GAS_SEPARATELY,
+        createdAt,
+    );
+    
+    ui.write('✅ Batch transfer (4 messages) sent successfully');
+    ui.write(`   Messages: 4`);
+    ui.write(`   Amount per message: 0.01 TON`);
+    ui.write(`   Total amount: 0.04 TON`);
+}
+
+/**
  * Execute batch transfer (12 messages)
  */
 async function executeBatchTransfer(
@@ -251,9 +293,9 @@ export async function run(provider: NetworkProvider, args: string[]) {
     const mode = (args[0] ?? 'simple').toLowerCase();
     
     // Validate mode
-    if (!['simple', 'comment', 'batch12', 'batch50'].includes(mode)) {
+    if (!['simple', 'comment', 'batch4', 'batch12', 'batch50'].includes(mode)) {
         ui.write(`❌ Invalid mode: ${mode}`);
-        ui.write(`   Valid modes: simple, comment, batch12, batch50`);
+        ui.write(`   Valid modes: simple, comment, batch4, batch12, batch50`);
         return;
     }
     
@@ -331,6 +373,18 @@ export async function run(provider: NetworkProvider, args: string[]) {
                     keyPair,
                     receiverAddress,
                     comment,
+                    queryId,
+                    createdAt,
+                    ui
+                );
+                break;
+                
+            case 'batch4':
+                await executeBatchTransfer4(
+                    wallet,
+                    contractProvider,
+                    keyPair,
+                    receiverAddress,
                     queryId,
                     createdAt,
                     ui

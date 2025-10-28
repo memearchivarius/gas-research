@@ -255,6 +255,73 @@ describe('Highload Wallet V3 Gas Measurement', () => {
         expect(Number(totalGas)).toBeLessThan(7000);
     });
 
+    it('[bench] HighloadV3: batch transfer (4 messages)', async () => {
+        const highloadWallet = blockchain.openContract(
+            HighloadWalletV3.createFromConfig(
+                {
+                    publicKey: keyPair.publicKey,
+                    subwalletId: DEFAULT_SUBWALLET,
+                    timeout: DEFAULT_TIMEOUT,
+                },
+                codeHighloadV3
+            )
+        );
+
+        // Deploy wallet
+        const deployer = await blockchain.treasury('deployer');
+        await highloadWallet.sendDeploy(deployer.getSender(), toNano('15'));
+
+        const queryId = new HighloadQueryId();
+
+        // Create batch of 4 messages with unique comments to avoid deduplication
+        const messages = Array.from({ length: 4 }, (_, i) => ({
+            type: 'sendMsg' as const,
+            mode: SendMode.PAY_GAS_SEPARATELY,
+            outMsg: createTransferWithComment(receiver, toNano('0.01'), `${i + 1}`),
+        }));
+
+        // Send batch via external message
+        const result = await highloadWallet.sendBatch(
+            keyPair.secretKey,
+            messages,
+            DEFAULT_SUBWALLET,
+            queryId,
+            DEFAULT_TIMEOUT,
+            toNano('0.05'),
+            SendMode.PAY_GAS_SEPARATELY,
+            controlledTimestamp()
+        );
+
+        // Print detailed breakdown
+        const totalGas = printTransactionBreakdown(
+            result.transactions,
+            'Highload V3: Batch Transfer (4 msgs)'
+        );
+
+        // Additional metrics for batch
+        const avgGasPerMessage = Number(totalGas) / 4;
+        console.log(`\n=== Batch Efficiency ===`);
+        console.log(`Total gas:        ${totalGas.toString().padStart(10)} gas`);
+        console.log(`Avg per message:  ${avgGasPerMessage.toFixed(0).padStart(10)} gas`);
+        console.log(`Messages sent:    ${messages.length}`);
+
+        // Verify transactions
+        expect(result.transactions.length).toBeGreaterThanOrEqual(2);
+
+        expect(result.transactions).toHaveTransaction({
+            from: highloadWallet.address,
+            to: receiver.address,
+            success: true,
+        });
+
+        // Log aggregated gas - slice(0, 2) gets external + internal self-transfer
+        GAS_LOG.rememberGas('batch_4_messages', result.transactions.slice(0, 2), blockchain);
+
+        // Assert reasonable gas range for batch
+        expect(Number(totalGas)).toBeGreaterThan(7000);
+        expect(Number(totalGas)).toBeLessThan(15000);
+    });
+
     it('[bench] HighloadV3: batch transfer (12 messages)', async () => {
         const highloadWallet = blockchain.openContract(
             HighloadWalletV3.createFromConfig(

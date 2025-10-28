@@ -299,4 +299,71 @@ describe('Wallet V5R1 Gas Measurement', () => {
             success: true,
         });
     });
+
+    it('[bench] V5R1: batch transfer (50 messages)', async () => {
+        // Deploy wallet
+        const deployer = await blockchain.treasury('deployer');
+        await deployer.send({
+            to: wallet.address,
+            value: toNano('100'),
+            init: wallet.init,
+        });
+
+        const seqno = await wallet.getSeqno();
+
+        // Create 50 messages with unique comments to avoid deduplication
+        const messages = Array.from({ length: 50 }, (_, i) =>
+            internal({
+                to: receiver.address,
+                value: toNano('0.05'),
+                bounce: false,
+                body: beginCell()
+                    .storeUint(0, 32) // text comment opcode
+                    .storeStringTail(`msg-${i + 1}`) // unique comment: "msg-1", "msg-2", ..., "msg-50"
+                    .endCell(),
+            })
+        );
+
+        console.log('\n========================================');
+        console.log('  Wallet V5: Batch Transfer (50 msgs)');
+        console.log('========================================\n');
+
+        const transfer = await wallet.createTransfer({
+            seqno,
+            secretKey: keyPair.secretKey,
+            messages,
+            sendMode: SendMode.PAY_GAS_SEPARATELY,
+        });
+
+        const result = await blockchain.sendMessage({
+            info: {
+                type: 'external-in',
+                dest: wallet.address,
+                importFee: 0n,
+            },
+            body: transfer,
+        });
+
+        printTransactionFees(result.transactions);
+
+        // Log detailed metrics
+        const tx = result.transactions.find(t => t.inMessage?.info.type === 'external-in');
+        if (tx) {
+            GAS_LOG.rememberGas('batch_50_messages', tx, blockchain);
+
+            const gasUsed =
+                tx.description.type === 'generic' && tx.description.computePhase.type === 'vm'
+                    ? Number(tx.description.computePhase.gasUsed)
+                    : 0;
+
+            console.log(`\n💡 Gas per message: ${(gasUsed / 50).toFixed(0)} gas (avg)`);
+        }
+
+        // Verify all transactions success (all to the same receiver)
+        expect(result.transactions).toHaveTransaction({
+            from: wallet.address,
+            to: receiver.address,
+            success: true,
+        });
+    });
 });

@@ -125,6 +125,61 @@ describe('Wallet V3 Gas Measurement', () => {
         });
     });
 
+    it('[bench] V3: batch transfer (2 messages)', async () => {
+        const deployer = await blockchain.treasury('deployer');
+        await deployer.send({ to: walletV3.address, value: toNano('1'), init: walletV3.init });
+
+        const seqno = await walletV3.getSeqno();
+
+        // Create 2 messages with unique comments to avoid deduplication
+        const messages = Array.from({ length: 2 }, (_, i) =>
+            internal({
+                to: receiver.address,
+                value: toNano('0.01'),
+                bounce: false,
+                body: beginCell()
+                    .storeUint(0, 32) // text comment opcode
+                    .storeStringTail(`${i + 1}`) // unique comment: "1", "2"
+                    .endCell(),
+            })
+        );
+
+        console.log('\n========================================');
+        console.log('  Wallet V3: Batch Transfer (2 msgs)');
+        console.log('========================================\n');
+
+        const result = await blockchain.sendMessage({
+            info: { type: 'external-in', dest: walletV3.address, importFee: 0n },
+            body: await walletV3.createTransfer({
+                seqno,
+                secretKey: keyPair.secretKey,
+                sendMode: SendMode.PAY_GAS_SEPARATELY,
+                messages,
+            }),
+        });
+
+        printTransactionFees(result.transactions);
+
+        // Log detailed metrics
+        const tx = result.transactions.find(t => t.inMessage?.info.type === 'external-in');
+        if (tx) {
+            GAS_LOG.rememberGas('batch_2_messages', tx, blockchain);
+
+            // Additional batch metrics
+            const gasUsed =
+                tx.description.type === 'generic' && tx.description.computePhase.type === 'vm'
+                    ? Number(tx.description.computePhase.gasUsed)
+                    : 0;
+            console.log(`\n💡 Gas per message: ${(gasUsed / 2).toFixed(0)} gas (avg)\n`);
+        }
+
+        expect(result.transactions).toHaveTransaction({
+            from: walletV3.address,
+            to: receiver.address,
+            success: true,
+        });
+    });
+
     it('[bench] V3: batch transfer (4 messages)', async () => {
         const deployer = await blockchain.treasury('deployer');
         await deployer.send({ to: walletV3.address, value: toNano('1'), init: walletV3.init });
