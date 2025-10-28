@@ -3,7 +3,6 @@
     "version": "1.0.0",
     "description": "Research project for TON gas costs measurement",
     "license": "MIT",
-    "type": "module",
     "scripts": {
         "test": "jest",
         "build": "npx blueprint build --all",

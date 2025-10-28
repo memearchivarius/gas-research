@@ -18,6 +18,10 @@ import {
 import { sign } from '@ton/crypto';
 import { HighloadQueryId } from './HighloadQueryId';
 
+// Re-export types for convenience
+export type { OutActionSendMsg } from '@ton/core';
+export { HighloadQueryId } from './HighloadQueryId';
+
 const OP_INTERNAL_TRANSFER = 0xae42e5a4;
 
 export type HighloadWalletV3Config = {
